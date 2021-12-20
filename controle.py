@@ -1,16 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#from pinging import *
-import win32gui
-import os, time, sys, glob
-from unicurses import *
+"""
+pip install ping3
+pip install uni-curses
+for linux, i must do:
+sudo ln -s /usr/lib/x86_64-linux-gnu/libpanelw.so.6.2 libpanelw.so.6.2
+"""
+
+import os, time, sys
+from pathlib import Path
 import ping3
+from unicurses import *
+
+if os.name == 'nt':
+    import win32gui
 
 def init_ctrl_srv():
     global LINES, COLS
-    current = win32gui.GetForegroundWindow()
-    win32gui.MoveWindow(current, 0, 0, 900, 800, True)
+    if os.name == 'nt':
+        current = win32gui.GetForegroundWindow()
+        win32gui.MoveWindow(current, 0, 0, 900, 800, True)
     global LINES, COLS
     stdscr = initscr()
     start_color()
@@ -20,7 +30,6 @@ def init_ctrl_srv():
     noecho()
     cbreak()
     nodelay(stdscr, True)
-    # nodelay(1)
     curs_set(False)
     #LINES, COLS = getmaxyx(stdscr)
     LINES, COLS = (40, 80)
@@ -31,8 +40,8 @@ def close_ctrl_srv():
 
 def affiche_err():
     mvaddstr(1, COLS/2 - 5, "error")
-    #time.sleep(2)
-    
+    close_ctrl_srv()
+
 def kbhit():
         ch = getch()
         if ch != ERR:
@@ -49,7 +58,8 @@ def analyse(fichier4analyse):
     running = True
     # clear()
     result = list_ip(fichier4analyse)
-    mvaddstr( 45, COLS - 60, "barre d' espace pour arreter le programme", color_pair(3))
+    print("result : ", result)
+    mvaddstr( 1, COLS - 60, "barre d' espace pour arreter le programme", color_pair(3))
     refresh()
     if isinstance(result, str):
         mvaddstr( 1, COLS - 40, "erreur sur variable result")
@@ -58,7 +68,6 @@ def analyse(fichier4analyse):
     else:
         while running :
             cpt = cpt+1
-            #mvaddstr( 2, COLS - 70, "cpt : "+str(cpt))
             affiche_ping()
             time.sleep(0.1)
             key = getch()
@@ -81,12 +90,7 @@ def affiche_ping():
     mvaddstr( 0,0, date)
     mvaddstr( 0,30, cpt1)
     mvaddstr( 0,40, fichier)
-    #text = "affiche_ping " + str(cpt)
-    #mvaddstr( 1, COLS - 40, text)
     refresh()
-    #sys.stdout.flush()
-    #clear()
-    #print("RESULT = ", result)
     for ip in result:
         try:
             # dest=gethostbyname(ip[0])
@@ -118,9 +122,10 @@ def affiche_ping():
 def list_ip(fichier4analyse):
     global fichier
     lip = []
-    loc = os.getcwd()
-    fichier = loc + "\\" + fichier4analyse + ".ip"
-    if os.path.exists(fichier):
+    p = Path('.')
+    fichier = p / fichier4analyse
+    fichier = fichier.with_suffix('.ip')
+    if fichier.exists():
         with open(fichier, 'r') as ficr:
             try :
                 for ligne in ficr:
@@ -157,11 +162,9 @@ def create_range_file(ip, nb):
             fic.write(res + ',' + res + "\n")
         
 def find_ip_file():
-    loc = os.getcwd()
-    fic_ip = glob.glob("*.ip")
-    for x in fic_ip:   
-        print((os.path.splitext(x)[0]))
-    #sys.stdout.flush()
+    fic_ip = sorted(Path('.').glob('**/*.ip'))
+    for x in fic_ip:
+        print(x.stem)
     rep = input("choisissez le scan que vous voulez faire : ")
     return rep        
 
@@ -186,8 +189,7 @@ if __name__ == '__main__':
             fichier4analyse = "range" 
         else:
             fichier4analyse = param[1]
-           
-    #time.sleep(5)
+
     init_ctrl_srv()
     analyse(fichier4analyse)
     endwin()
