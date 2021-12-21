@@ -20,7 +20,7 @@ def init_ctrl_srv():
     global LINES, COLS
     if os.name == 'nt':
         current = win32gui.GetForegroundWindow()
-        win32gui.MoveWindow(current, 0, 0, 900, 800, True)
+        win32gui.MoveWindow(current, 300, 10, 800, 700, True)
     global LINES, COLS
     stdscr = initscr()
     start_color()
@@ -58,12 +58,11 @@ def analyse(fichier4analyse):
     running = True
     # clear()
     result = list_ip(fichier4analyse)
-    print("result : ", result)
-    mvaddstr( 1, COLS - 60, "barre d' espace pour arreter le programme", color_pair(3))
+    mvaddstr( 1, COLS - 60, "space bar for stop program", color_pair(3))
     refresh()
     if isinstance(result, str):
-        mvaddstr( 1, COLS - 40, "erreur sur variable result")
-        print("erreur sur variable result ")
+        mvaddstr( 1, COLS - 40, "error on variable 'result'")
+        print("error on variable 'result' ")
         affiche_err()
     else:
         while running :
@@ -78,8 +77,6 @@ def analyse(fichier4analyse):
 
 def affiche_ping():
     global fichier
-    global result
-    global cpt
     cpt1 = str(cpt)
     index = 0
     xorg = 3
@@ -93,16 +90,14 @@ def affiche_ping():
     refresh()
     for ip in result:
         try:
-            # dest=gethostbyname(ip[0])
-            # delay=doOne(dest, timeout)
-            delay = ping3.ping(ip[0], unit='ms', timeout=0.5) # à ajuster si besoin
-            if delay != None:           # on a une reponse, on ecrit en vert
+            delay = ping3.ping(ip[0], unit='ms', timeout=0.5) # adjust timeout if necessary
+            if delay != None:           # one response, write in green
                 g = 1
                 mvaddstr( yorg+index, xorg, ip[0], color_pair(g))
                 mvaddstr( yorg+index, xorg+15, " : ", color_pair(g))
                 mvaddstr( yorg+index, xorg+20, ip[1], color_pair(g))
                 refresh()
-            else:                        # pas de reponse, on ecrit en rouge
+            else:                        # no response, write in red
                 g = 2
                 mvaddstr( yorg+index, xorg, ip[0], color_pair(g))
                 mvaddstr( yorg+index, xorg+15, " : ", color_pair(g))
@@ -110,7 +105,7 @@ def affiche_ping():
                 refresh()
             index = index+ 1
             #time.sleep(0.5)
-        except:                          # pas de ping possible, on ecrit en bleu
+        except:                          # no ping possible, write in blue
             g = 3
             mvaddstr( yorg+index, xorg,ip[0], color_pair(g))
             mvaddstr( yorg+index, xorg+15, " : ", color_pair(g))
@@ -138,12 +133,12 @@ def list_ip(fichier4analyse):
                         description = res1[1]
                         lip = lip + [(nom, description)]
             except:
-                print("Erreur dans le fichier ' %s '" %(fichier))
-                lip = lip + [("localhost","Erreur dans le fichier ' %s '" %(fichier))]
+                print("Error in file : ' %s '" %(fichier))
+                lip = lip + [("localhost","Error in file : ' %s '" %(fichier))]
             return lip
     else:
-        print(lip)
-        lip = lip + [("localhost","veuillez remplir le fichier ' %s '" % (fichier))]
+        #print(lip)
+        lip = lip + [("localhost","please, fill the file : ' %s '" % (fichier))]
         return lip        
 
 def create_range_file(ip, nb):
@@ -155,9 +150,9 @@ def create_range_file(ip, nb):
 #-------------------------
 #\n"""
         fic.write(preamb)
-        for x in range(0, nb):
+        for x in range(0, nb):            
             ipl = ip.split('.')            
-            ipl[-1] = str(int(ipl[-1])+x)  # on incrémente l' ip de départ jusque nb fois
+            ipl[-1] = str(int(ipl[-1])+x)  # we increase the starting ip up to nb times
             res = ".".join(ipl)
             fic.write(res + ',' + res + "\n")
         
@@ -165,7 +160,7 @@ def find_ip_file():
     fic_ip = sorted(Path('.').glob('**/*.ip'))
     for x in fic_ip:
         print(x.stem)
-    rep = input("choisissez le scan que vous voulez faire : ")
+    rep = input("choose the scan to perform : ")
     return rep        
 
 if __name__ == '__main__':
@@ -183,9 +178,9 @@ if __name__ == '__main__':
         time.sleep(4)
         fichier4analyse = find_ip_file()
     else:
-        if param[1] == 'range':            
-            ip, nb = param[2], param[3] # ip de départ,  nb d' adresse à pinguer
-            create_range_file(ip, int(nb))  # on crée le fichier au format ".ip"
+        if param[1] in ['range', 'plage']:            
+            ip, nb = param[2], param[3]  # start_ip,  number of consecutive ping
+            create_range_file(ip, int(nb))  # create file with ".ip" format
             fichier4analyse = "range" 
         else:
             fichier4analyse = param[1]
