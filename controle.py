@@ -13,16 +13,23 @@ import time
 from pathlib import Path
 import ping3
 from unicurses import *
+#import subprocess
 
 if os.name == 'nt':
     import win32gui
 
+if os.name == 'posix':
+    import sys    
 
-def init_ctrl_srv():
+
+def init_ctrl_srv(lin, col):
     global LINES, COLS, green, red, blue
     if os.name == 'nt':
-        current = win32gui.GetForegroundWindow()
-        win32gui.MoveWindow(current, 300, 10, 800, 700, True)  # position and adjust the window size
+        colpar = 'cols='+str(col+15)
+        linpar = 'lines='+str(lin+4)
+        os.system("mode con: %s %s" % (colpar, linpar)) 
+    elif os.name == 'posix':
+        sys.stdout.write("\x1b[8;{rows};{cols}t".format(rows=lin, cols=col))
     stdscr = initscr()
     start_color()
     init_pair(1, COLOR_GREEN, COLOR_BLACK)
@@ -155,20 +162,54 @@ def find_ip_file():
     fic_ip = sorted(Path('.').glob('**/*.ip'))
     for x in fic_ip:
         print(x.stem)
-    rep = input("choose the scan to perform : ")
+    rep = input("\n      choose the scan to perform : ")
     return rep        
 
+    
+def taille_fen(fichier4analyse):
+    nl = 0   # nb line
+    ll = 0   # lenght line
+    global fichier
+    lip = []
+    p = Path('.')
+    fichier = p / fichier4analyse
+    fichier = fichier.with_suffix('.ip')
+    if fichier.exists():
+        with open(fichier, 'r') as fic:
+            try:
+                for line in fic:
+                    if line[0] == "#":
+                        continue
+                    else:
+                        nl = nl+1
+                        tll = len(line)
+                        if tll > ll:
+                            ll = tll
+            except:
+                print("Error in file : ' %s '" % fichier)
+                #lip = lip + [("localhost", "Error in file : ' %s '" % fichier)]
+            return nl, ll
 
 if __name__ == '__main__':
     global fichier
+    lin, col = 50, 80
+    colpar = 'cols='+str(col)
+    linpar = 'lines='+str(lin)
+    os.system("mode con: %s %s" % (colpar, linpar)) 
     param = sys.argv 
     if len(param) == 1:
         print("test ping by rkig0111")
+        print("\tusage: python3 controle.py     # to get the list of vlan")
+        print("or")
         print("\tusage: python3 controle.py  'name of vlan'")
+        print("or")
         print("\tusage: python3 controle.py  range start_ip nb_ping")
+        print("or")
+        print("\tusage: python3 controle.py  plage start_ip nb_ping    # in french  ;-) ")
         print("\tusage: python3 controle.py  range 192.168.0.50 10")
+        print()
         print("\tdo ping from 192.168.0.50 ----> 192.168.0.59 \n\n")
-        time.sleep(4)
+        time.sleep(1)
         fichier4analyse = find_ip_file()
     else:
         if param[1] in ['range', 'plage']:            
@@ -177,7 +218,8 @@ if __name__ == '__main__':
             fichier4analyse = "range" 
         else:
             fichier4analyse = param[1]
-
-    init_ctrl_srv()
+    
+    lin, col = taille_fen(fichier4analyse)
+    init_ctrl_srv(lin, col)
     analyse(fichier4analyse)
     endwin()
