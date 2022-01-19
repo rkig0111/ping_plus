@@ -1,0 +1,12 @@
+# syntaxe: addrIP ou nom de l'appareil, description
+# pas de ligne vierge etc ...
+# il n'y a que le # qui permet de mettre un commentaire !
+#
+#-------------------------
+#
+10.140.7.10,Portique Fontenoy     00:90:E8:04:3B:2D	
+10.199.7.10,Portique St Vincent   00:90:E8:04:27:C9  		
+172.31.110.7,Portique Nord         00:90:E8:04:3A:1B	  	
+172.16.7.10,Portique Nchu CBH     00:90:E8:04:39:9A
+g1363956,superviseur saphymo   44:8A:5B:02:72:72
+10.143.5.17,superviseur saphymo   44:8A:5B:02:72:72

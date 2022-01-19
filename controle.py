@@ -29,7 +29,9 @@ def init_ctrl_srv(lin, col):
         linpar = 'lines='+str(lin+4)
         os.system("mode con: %s %s" % (colpar, linpar)) 
     elif os.name == 'posix':
-        sys.stdout.write("\x1b[8;{rows};{cols}t".format(rows=lin, cols=col))
+        colpar = col+5
+        linpar = lin+5
+        sys.stdout.write("\x1b[8;{rows};{cols}t".format(rows=linpar, cols=colpar))
     stdscr = initscr()
     start_color()
     init_pair(1, COLOR_GREEN, COLOR_BLACK)
@@ -57,7 +59,7 @@ def affiche_err():
 
 
 def analyse(fichier4analyse):
-    global result
+    global result, COLS
     global cpt
     cpt = 0
     running = True
@@ -190,6 +192,21 @@ def taille_fen(fichier4analyse):
                 #lip = lip + [("localhost", "Error in file : ' %s '" % fichier)]
             return nl, ll
 
+def usage():
+    print("test ping by rkig0111")
+    print("\tusage: python3 controle.py     # to get the list of vlan")
+    print("or")
+    print("\tusage: python3 controle.py  'name of vlan'")
+    print("or")
+    print("\tusage: python3 controle.py  range start_ip nb_ping")
+    print("or")
+    print("\tusage: python3 controle.py  plage start_ip nb_ping    # in french  ;-) ")
+    print("\tusage: python3 controle.py  range 192.168.0.50 10")
+    print()
+    print("\tdo ping from 192.168.0.50 ----> 192.168.0.59 \n\n")
+    time.sleep(1)
+    
+    
 if __name__ == '__main__':
     global fichier
     lin, col = 50, 80
@@ -198,21 +215,9 @@ if __name__ == '__main__':
     os.system("mode con: %s %s" % (colpar, linpar)) 
     param = sys.argv 
     if len(param) == 1:
-        print("test ping by rkig0111")
-        print("\tusage: python3 controle.py     # to get the list of vlan")
-        print("or")
-        print("\tusage: python3 controle.py  'name of vlan'")
-        print("or")
-        print("\tusage: python3 controle.py  range start_ip nb_ping")
-        print("or")
-        print("\tusage: python3 controle.py  plage start_ip nb_ping    # in french  ;-) ")
-        print("\tusage: python3 controle.py  range 192.168.0.50 10")
-        print()
-        print("\tdo ping from 192.168.0.50 ----> 192.168.0.59 \n\n")
-        time.sleep(1)
         fichier4analyse = find_ip_file()
     else:
-        if param[1] in ['range', 'plage']:            
+        if param[1] in ['range', 'plage'] and param[2]:            
             ip, nb = param[2], param[3]  # start_ip,  number of consecutive ping
             create_range_file(ip, int(nb))  # create file with ".ip" format
             fichier4analyse = "range" 
@@ -223,3 +228,4 @@ if __name__ == '__main__':
     init_ctrl_srv(lin, col)
     analyse(fichier4analyse)
     endwin()
+
